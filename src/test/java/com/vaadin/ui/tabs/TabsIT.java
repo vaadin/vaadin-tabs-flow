@@ -19,7 +19,6 @@ package com.vaadin.ui.tabs;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.demo.ComponentDemoServer;
 import com.vaadin.flow.demo.ComponentDemoTest;
 import com.vaadin.testbench.By;
 
@@ -32,10 +31,6 @@ import static org.junit.Assert.assertThat;
  * @author Vaadin Ltd.
  */
 public class TabsIT extends ComponentDemoTest {
-
-    public static void main(String... args) throws Exception {
-        new ComponentDemoServer().startServer();
-    }
 
     @Test
     public void pageGetsDisplayedWhenAssociatedTabIsSelected() {

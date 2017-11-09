@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.demo.ComponentDemoServer;
 import com.vaadin.flow.demo.DemoView;
 import com.vaadin.router.Route;
 import com.vaadin.ui.checkbox.Checkbox;
@@ -43,10 +42,6 @@ import com.vaadin.ui.layout.VerticalLayout;
 @Route("")
 @HtmlImport("bower_components/vaadin-valo-theme/vaadin-progress-bar.html")
 public class TabsView extends DemoView {
-
-    public static void main(String... args) throws Exception {
-        new ComponentDemoServer().startServer();
-    }
 
     @Override
     protected void initView() {
