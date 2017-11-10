@@ -43,13 +43,14 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     }
 
     /**
-     * Constructs a new object in its default state.
+     * Constructs an empty new object with {@code HORIZONTAL} orientation.
      */
     public Tabs() {
     }
 
     /**
-     * Constructs a new object enclosing the given tabs.
+     * Constructs a new object enclosing the given tabs, with {@code HORIZONTAL}
+     * orientation.
      *
      * @param tabs
      *            the tabs to enclose
