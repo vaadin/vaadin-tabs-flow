@@ -24,6 +24,7 @@ import com.vaadin.flow.component.tabs.demo.TabsView;
 import com.vaadin.flow.demo.ComponentDemoTest;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -37,13 +38,13 @@ public class TabsIT extends ComponentDemoTest {
     public void pageGetsDisplayedWhenAssociatedTabIsSelected() {
         WebElement tab3 = layout.findElement(By.id("tab3"));
         WebElement page1 = layout.findElement(By.id("page1"));
-        WebElement page3 = layout.findElement(By.id("page3"));
+        assertFalse(isElementPresent(By.id("page3")));
         assertThat(page1.getCssValue("display"), is("block"));
-        assertThat(page3.getCssValue("display"), is("none"));
 
         scrollIntoViewAndClick(tab3);
 
-        waitUntil(driver -> page1.getCssValue("display").equals("none"));
+        waitUntil(driver -> "true".equals(page1.getAttribute("hidden")));
+        WebElement page3 = layout.findElement(By.id("page3"));
         assertThat(page3.getCssValue("display"), is("block"));
     }
 
