@@ -47,6 +47,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * HORIZONTAL} orientation.
      */
     public Tabs() {
+        getElement().addPropertyChangeListener("selected", event -> {
+            getChildren().filter(Tab.class::isInstance).map(Tab.class::cast)
+                    .forEach(tab -> tab.setSelected(false));
+            getSelectedTab().setSelected(true);
+        });
     }
 
     /**
@@ -57,6 +62,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      *            the tabs to enclose
      */
     public Tabs(Tab... tabs) {
+        this();
         add(tabs);
     }
 
