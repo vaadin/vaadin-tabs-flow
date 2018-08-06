@@ -86,6 +86,13 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * An event to mark that the selected tab has changed.
+     * <p>
+     * The selection is based on index. It means that the selected tab is
+     * referenced by the index and not directly as a selected component. As a
+     * result the event is also fired if selected tab is removed which
+     * automatically moves the selection or if there are tabs which are added
+     * before the selected tab (since the selected index is the same it changes
+     * the selected tab).
      */
     @DomEvent("selected-changed")
     public static class SelectedChangeEvent extends ComponentEvent<Tabs> {
