@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.tabs.tests;
 
-import java.util.Objects;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -67,15 +65,14 @@ public class SelectedTabPage extends Div {
 
     private void addComponentAtIndex(Tabs tabs, int index,
             Component component) {
-        Objects.requireNonNull(component, "Component should not be null");
         int indexCheck;
         if (index < 0) {
             indexCheck = 0;
-        } else if (index > getElement().getChildCount()) {
-            indexCheck = getElement().getChildCount();
+        } else if (index > tabs.getElement().getChildCount()) {
+            indexCheck = tabs.getElement().getChildCount();
         } else {
             indexCheck = index;
         }
-        getElement().insertChild(indexCheck, component.getElement());
+        tabs.getElement().insertChild(indexCheck, component.getElement());
     }
 }
