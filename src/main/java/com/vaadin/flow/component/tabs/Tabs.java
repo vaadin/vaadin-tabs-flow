@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -88,6 +89,16 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         public SelectedChangeEvent(Tabs source, boolean fromClient) {
             super(source, fromClient);
         }
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        getElement().getNode().runWhenAttached(ui -> ui.beforeClientResponse(
+                this,
+                context -> ui.getPage().executeJavaScript(
+                        "$0.addEventListener('items-changed', "
+                                + "function(){ this.$server.itemsChanged(); });",
+                        getElement())));
     }
 
     /**
@@ -230,6 +241,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         Tab currentlySelected = getSelectedTab();
         if (!Objects.equals(currentlySelected, selectedTab)) {
             selectedTab = currentlySelected;
+            fireEvent(new SelectedChangeEvent(this, true));
         }
     }
 
