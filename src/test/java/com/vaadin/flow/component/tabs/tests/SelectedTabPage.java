@@ -50,12 +50,21 @@ public class SelectedTabPage extends Div {
 
         button.setId("show-selection");
 
+        NativeButton delete = new NativeButton("Delete selected tab",
+                event -> tabs.remove(tabs.getSelectedTab()));
+        delete.setId("delete");
+
+        NativeButton add = new NativeButton("Add new tab as the first",
+                event -> tabs.getElement().insertChild(0,
+                        new Tab("baz").getElement()));
+        add.setId("add");
+
         Div selectedTab = new Div();
         tabs.addSelectedChangeListener(
                 event -> selectedTab.setText(tabs.getSelectedTab().getLabel()));
 
         selectedTab.setId("selection-event");
 
-        add(tabs, button, selectedTab);
+        add(tabs, button, delete, add, selectedTab);
     }
 }

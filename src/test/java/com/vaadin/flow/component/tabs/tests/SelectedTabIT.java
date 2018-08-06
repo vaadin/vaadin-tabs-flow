@@ -69,4 +69,19 @@ public class SelectedTabIT extends AbstractComponentIT {
         Assert.assertEquals(Boolean.TRUE.toString(),
                 lastTab.getAttribute("disabled"));
     }
+
+    @Test
+    public void selectionEventOnItemsChange() {
+        open();
+
+        findElement(By.id("delete")).click();
+
+        WebElement selectionEvent = findElement(By.id("selection-event"));
+
+        Assert.assertEquals("bar", selectionEvent.getText());
+
+        findElement(By.id("add")).click();
+
+        Assert.assertEquals("baz", selectionEvent.getText());
+    }
 }
