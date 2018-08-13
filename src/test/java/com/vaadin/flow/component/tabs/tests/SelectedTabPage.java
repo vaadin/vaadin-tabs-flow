@@ -50,6 +50,12 @@ public class SelectedTabPage extends Div {
 
         button.setId("show-selection");
 
-        add(tabs, button);
+        Div selectedTab = new Div();
+        tabs.addSelectedChangeListener(
+                event -> selectedTab.setText(tabs.getSelectedTab().getLabel()));
+
+        selectedTab.setId("selection-event");
+
+        add(tabs, button, selectedTab);
     }
 }
