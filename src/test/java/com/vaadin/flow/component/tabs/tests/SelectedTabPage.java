@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.tabs.tests;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.tabs.Tab;
@@ -45,6 +46,33 @@ public class SelectedTabPage extends Div {
 
         button.setId("show-selection");
 
-        add(tabs, button);
+        NativeButton delete = new NativeButton("Delete selected tab",
+                event -> tabs.remove(tabs.getSelectedTab()));
+        delete.setId("delete");
+
+        NativeButton add = new NativeButton("Add new tab as the first",
+                event -> addComponentAtIndex(tabs, 0, new Tab("baz")));
+        add.setId("add");
+
+        Div selectedTab = new Div();
+        tabs.addSelectedChangeListener(
+                event -> selectedTab.setText(tabs.getSelectedTab().getLabel()));
+
+        selectedTab.setId("selection-event");
+
+        add(tabs, button, delete, add, selectedTab);
+    }
+
+    private void addComponentAtIndex(Tabs tabs, int index,
+            Component component) {
+        int indexCheck;
+        if (index < 0) {
+            indexCheck = 0;
+        } else if (index > tabs.getElement().getChildCount()) {
+            indexCheck = tabs.getElement().getChildCount();
+        } else {
+            indexCheck = index;
+        }
+        tabs.getElement().insertChild(indexCheck, component.getElement());
     }
 }
