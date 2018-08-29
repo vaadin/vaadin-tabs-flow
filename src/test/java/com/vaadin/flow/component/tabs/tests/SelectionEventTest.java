@@ -193,6 +193,22 @@ public class SelectionEventTest {
                 replaceTab, tabs.getSelectedTab());
     }
 
+    @Test
+    public void removeNonChildTab_selectionNotChanged() {
+        tabs.setSelectedTab(tab2);
+        Assert.assertEquals(1, eventCount);
+        Tab orphan = new Tab();
+        tabs.remove(orphan);
+        Assert.assertEquals(
+                "Selection event should not have been fired after "
+                        + "removing a Tab which is not a child of the Tabs.",
+                1, eventCount);
+        Assert.assertEquals(
+                "Selected tab should not have been changed after "
+                        + "removing a Tab which is not a child of the Tabs.",
+                tab2, tabs.getSelectedTab());
+    }
+
     @After
     public void checkThatOnlyOneTabIsSelected() {
         if (tabs.getComponentCount() > 0) {

@@ -90,8 +90,9 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     @Override
     public void remove(Component... components) {
-        int lowerIndices = (int) Stream.of(components)
-                .filter(c -> indexOf(c) < getSelectedIndex()).count();
+        int lowerIndices = (int) Stream.of(components).map(this::indexOf)
+                .filter(index -> index >= 0 && index < getSelectedIndex())
+                .count();
 
         HasOrderedComponents.super.remove(components);
 
