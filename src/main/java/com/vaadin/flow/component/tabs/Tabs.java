@@ -33,6 +33,18 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * Server-side component for the {@code vaadin-tabs} element.
+ * <p>
+ * {@link Tab} components can be added to this component with the
+ * {@link #add(Tab...)} method or the {@link #Tabs(Tab...)} constructor. The Tab
+ * components added to it can be selected with the
+ * {@link #setSelectedIndex(int)} or {@link #setSelectedTab(Tab)} methods.
+ * Removing the selected tab from the component changes the selection to the
+ * next available tab.
+ * <p>
+ * <strong>Note:</strong> Adding or removing Tab components via the Element API,
+ * eg. {@code tabs.getElement().insertChild(0, tab.getElement()); }, doesn't
+ * update the selected index, so it may cause the selected tab to change
+ * unexpectedly.
  *
  * @author Vaadin Ltd.
  */
@@ -88,6 +100,13 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         updateSelectedTab(false);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Removing components before the selected tab will decrease the
+     * {@link #getSelectedIndex() selected index} to avoid changing the selected
+     * tab. Removing the selected tab will select the next available tab.
+     */
     @Override
     public void remove(Component... components) {
         int lowerIndices = (int) Stream.of(components).map(this::indexOf)
@@ -111,6 +130,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This will reset the {@link #getSelectedIndex() selected index} to zero.
+     */
     @Override
     public void removeAll() {
         HasOrderedComponents.super.removeAll();
@@ -121,6 +145,13 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Adding a component before the currently selected tab will increment the
+     * {@link #getSelectedIndex() selected index} to avoid changing the selected
+     * tab.
+     */
     @Override
     public void addComponentAtIndex(int index, Component component) {
         HasOrderedComponents.super.addComponentAtIndex(index, component);
@@ -131,6 +162,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Replacing the currently selected tab will make the new tab selected.
+     */
     @Override
     public void replace(Component oldComponent, Component newComponent) {
         HasOrderedComponents.super.replace(oldComponent, newComponent);
