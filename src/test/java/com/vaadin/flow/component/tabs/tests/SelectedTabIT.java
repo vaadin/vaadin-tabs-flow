@@ -91,6 +91,12 @@ public class SelectedTabIT extends AbstractComponentIT {
                 lastTab.getAttribute("disabled"));
     }
 
+    @Test // https://github.com/vaadin/vaadin-tabs-flow/issues/69
+    public void addTabAsFirstWithElementAPI_selectionIsChanged_eventFromClient() {
+        findElement(By.id("add-first-with-element-api")).click();
+        assertSelectionEvent(1, "asdf client");
+    }
+
     private void assertSelectionEvent(int amountOfEvents,
             String expectedLatestMessage) {
         List<WebElement> selectionEventMessages = findElements(

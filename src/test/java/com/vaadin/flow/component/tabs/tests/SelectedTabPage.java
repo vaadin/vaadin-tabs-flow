@@ -65,17 +65,23 @@ public class SelectedTabPage extends Div {
 
         NativeButton setSelectedTab = new NativeButton("setSelectedTab(tab2)",
                 event -> tabs.setSelectedTab(tab2));
-        setSelectedIndex.setId("set-selected-tab");
+        setSelectedTab.setId("set-selected-tab");
 
         NativeButton deleteFirst = new NativeButton("Delete first tab",
                 event -> tabs.remove(tabs.getChildren().findFirst().get()));
         deleteFirst.setId("delete-first");
 
+        NativeButton addFirstWithElementAPI = new NativeButton(
+                "Add new tab as the first using Element API",
+                event -> tabs.getElement().insertChild(0,
+                        new Tab("asdf").getElement()));
+        addFirstWithElementAPI.setId("add-first-with-element-api");
+
         tabs.addSelectedChangeListener(event -> addEventMessage(
                 tabs.getSelectedTab().getLabel(), event.isFromClient()));
 
-        add(tabs, button, delete, deleteFirst, addFirst, setSelectedIndex,
-                setSelectedTab);
+        add(tabs, button, delete, deleteFirst, addFirst, addFirstWithElementAPI,
+                setSelectedIndex, setSelectedTab);
     }
 
     private void addEventMessage(String tabLabel, boolean isFromClient) {
