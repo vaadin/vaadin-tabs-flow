@@ -91,14 +91,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      *            the tabs to enclose
      */
     public void add(Tab... tabs) {
-        boolean wasEmpty = getComponentCount() == 0;
-        HasOrderedComponents.super.add(tabs);
-        if (wasEmpty) {
-            assert getSelectedIndex() == -1;
-            setSelectedIndex(0);
-        } else {
-            updateSelectedTab(false);
-        }
+        add((Component[]) tabs);
     }
 
     @Override
