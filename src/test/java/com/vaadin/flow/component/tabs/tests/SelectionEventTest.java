@@ -229,6 +229,19 @@ public class SelectionEventTest {
     }
 
     @Test
+    public void unselectWithAnyNegativeIndex_selectedIndexMinusOne() {
+        tabs.setSelectedIndex(-100);
+        Assert.assertEquals("Unselecting the selected tab should fire event", 1,
+                eventCount);
+        Assert.assertEquals("The selected tab should be null after unselecting",
+                null, tabs.getSelectedTab());
+        Assert.assertEquals(
+                "The selected index should return -1 when no tab is selected, even "
+                        + "when the index was set as some other negative number",
+                -1, tabs.getSelectedIndex());
+    }
+
+    @Test
     public void unselect_selectOldSelection_eventFired() {
         tabs.setSelectedTab(null);
         tabs.setSelectedTab(tab1);

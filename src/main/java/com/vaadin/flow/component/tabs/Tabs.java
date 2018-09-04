@@ -242,7 +242,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      */
     public Tab getSelectedTab() {
         int selectedIndex = getSelectedIndex();
-        if (selectedIndex == -1) {
+        if (selectedIndex < 0) {
             return null;
         }
 
@@ -330,6 +330,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     @ClientCallable
     private void updateSelectedTab(boolean changedFromClient) {
+        if (getSelectedIndex() < -1) {
+            setSelectedIndex(-1);
+            return;
+        }
+
         Tab currentlySelected = getSelectedTab();
 
         if (Objects.equals(currentlySelected, selectedTab)) {
