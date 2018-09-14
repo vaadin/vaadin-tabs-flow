@@ -53,6 +53,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     private static final String SELECTED = "selected";
 
+    private Tab selection;
+
     private transient Tab selectedTab;
 
     /**
@@ -204,7 +206,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * Adds a listener for {@link SelectedChangeEvent}.
-     * 
+     *
      * @param listener
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
@@ -241,17 +243,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * @return the selected tab, or {@code null} if none is selected
      */
     public Tab getSelectedTab() {
-        int selectedIndex = getSelectedIndex();
-        if (selectedIndex < 0) {
-            return null;
-        }
-
-        Component selectedComponent = getComponentAt(selectedIndex);
-        if (!(selectedComponent instanceof Tab)) {
-            throw new IllegalStateException(
-                    "Illegal component inside Tabs: " + selectedComponent);
-        }
-        return (Tab) selectedComponent;
+        return selection;
     }
 
     /**
@@ -268,12 +260,14 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
             return;
         }
 
-        int selectedIndex = indexOf(selectedTab);
-        if (selectedIndex < 0) {
+        if (selectedTab.getParent().orElse(null) != this) {
             throw new IllegalArgumentException(
                     "Tab to select must be a child: " + selectedTab);
         }
-        setSelectedIndex(selectedIndex);
+        selection = selectedTab;
+        getElement().executeJavaScript("var i = 0; var child = $0;\n "
+                + "while( (child = child.previousSibling) != null && child.tagName !=null &&  child.tagName.toLowerCase() =='vaadin-tab') "
+                + "{ i++; }\n this.selected = i;", selectedTab.getElement());
     }
 
     /**
