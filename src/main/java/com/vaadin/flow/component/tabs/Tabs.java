@@ -144,6 +144,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         if (newSelectedIndex != getSelectedIndex()) {
             setSelectedIndex(newSelectedIndex);
         } else {
+            selectedTab = (Tab) getChildren().skip(newSelectedIndex).findFirst()
+                    .get();
             updateSelectedTab(false);
         }
     }
@@ -159,6 +161,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         if (getSelectedIndex() > -1) {
             setSelectedIndex(-1);
         } else {
+            selectedTab = null;
             updateSelectedTab(false);
         }
     }
@@ -240,6 +243,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      *            the zero-based index of the selected tab, -1 to unselect all
      */
     public void setSelectedIndex(int selectedIndex) {
+        previouslySelectedIndex = selectedIndex;
         getElement().setProperty(SELECTED, selectedIndex);
     }
 

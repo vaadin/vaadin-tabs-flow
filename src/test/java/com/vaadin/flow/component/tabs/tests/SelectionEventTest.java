@@ -16,6 +16,10 @@
 
 package com.vaadin.flow.component.tabs.tests;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.stream.Stream;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,19 +39,19 @@ public class SelectionEventTest {
     private int eventCount;
 
     @Before
-    public void init() {
+    public void init() throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
         tab1 = new Tab("foo");
         tab2 = new Tab("bar");
         tabs = new Tabs(tab1, tab2);
 
+        eventCount = 0;
+
+        initZeroIndex();
+
         tabs.addSelectedChangeListener(e -> {
-            Assert.assertFalse(
-                    "isFromClient() returned true for an event fired from server",
-                    e.isFromClient());
             eventCount++;
         });
-
-        eventCount = 0;
     }
 
     @Test
@@ -74,7 +78,8 @@ public class SelectionEventTest {
     }
 
     @Test
-    public void removeSelectedTab_selectionChanged() {
+    public void removeSelectedTab_selectionChanged()
+            throws IllegalAccessException, InvocationTargetException {
         tabs.remove(tab1);
         Assert.assertEquals(
                 "Selection event should have been fired after removing the selected tab",
@@ -243,8 +248,8 @@ public class SelectionEventTest {
 
     @Test
     public void unselect_selectOldSelection_eventFired() {
-        tabs.setSelectedTab(null);
-        tabs.setSelectedTab(tab1);
+        tabs.setSelectedIndex(-1);
+        tabs.setSelectedIndex(0);
         Assert.assertEquals("Selection event should have been fired", 2,
                 eventCount);
         Assert.assertEquals("Selected tab should be the one which was selected",
@@ -263,6 +268,15 @@ public class SelectionEventTest {
         Assert.assertEquals(
                 "Selection was not changed, no event should've been fired", 1,
                 eventCount);
+    }
+
+    private void initZeroIndex()
+            throws IllegalAccessException, InvocationTargetException {
+        Method setZeroIndex = Stream.of(Tabs.class.getDeclaredMethods())
+                .filter(method -> method.getName().equals("setZeroIndex"))
+                .findFirst().get();
+        setZeroIndex.setAccessible(true);
+        setZeroIndex.invoke(tabs, 0);
     }
 
 }
