@@ -21,6 +21,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -53,9 +55,12 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     private static final String SELECTED = "selected";
 
-    private Tab selection;
+    private Tab selectedTab;
 
-    private transient Tab selectedTab;
+    private transient Tab previouslySelectedTab;
+    private int previouslySelectedIndex;
+
+    private int clientSideZeroIndex = -1;
 
     /**
      * The valid orientations of {@link Tabs} instances.
@@ -70,6 +75,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      */
     public Tabs() {
         setSelectedIndex(-1);
+        previouslySelectedIndex = -1;
         getElement().addPropertyChangeListener(SELECTED,
                 event -> updateSelectedTab(event.isUserOriginated()));
     }
@@ -200,7 +206,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
                 this,
                 context -> ui.getPage().executeJavaScript(
                         "$0.addEventListener('items-changed', "
-                                + "function(){ this.$server.updateSelectedTab(true); });",
+                                + "function(){ this.$server.itemsChanged(); });",
                         getElement())));
     }
 
@@ -243,7 +249,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * @return the selected tab, or {@code null} if none is selected
      */
     public Tab getSelectedTab() {
-        return selection;
+        return selectedTab;
     }
 
     /**
@@ -264,7 +270,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
             throw new IllegalArgumentException(
                     "Tab to select must be a child: " + selectedTab);
         }
-        selection = selectedTab;
+        this.selectedTab = selectedTab;
         getElement().executeJavaScript("var i = 0; var child = $0;\n "
                 + "while( (child = child.previousSibling) != null && child.tagName !=null &&  child.tagName.toLowerCase() =='vaadin-tab') "
                 + "{ i++; }\n this.selected = i;", selectedTab.getElement());
@@ -322,32 +328,96 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         getChildren().forEach(tab -> ((Tab) tab).setFlexGrow(flexGrow));
     }
 
+    @Override
+    protected void fireEvent(ComponentEvent<?> componentEvent) {
+        if (componentEvent instanceof SelectedChangeEvent
+                && clientSideZeroIndex == -1) {
+            return;
+        }
+        super.fireEvent(componentEvent);
+    }
+
     @ClientCallable
+    private void itemsChanged() {
+        if (clientSideZeroIndex == 0) {
+            // Initially the clientSideZeroIndex's value is -1 which means we
+            // don't know the index. Then it's set via this call. If at some
+            // point the index becomes zero then it means that all client side
+            // tabs has been removed at some point and they can't be restored
+            // anymore. So no need to update this index anymore.
+            return;
+        }
+        getElement().executeJavaScript(
+                "this.$server.setZeroIndex(this.items.length -$0);",
+                (int) getChildren().count());
+    }
+
+    @ClientCallable
+    private void setZeroIndex(int index) {
+        clientSideZeroIndex = index;
+        updateSelectedTab(true);
+    }
+
     private void updateSelectedTab(boolean changedFromClient) {
-        if (getSelectedIndex() < -1) {
+        if (changedFromClient && getSelectedIndex() < -1) {
             setSelectedIndex(-1);
             return;
         }
 
-        Tab currentlySelected = getSelectedTab();
+        Tab currentlySelected = null;
 
-        if (Objects.equals(currentlySelected, selectedTab)) {
+        if (changedFromClient) {
+            int selectedIndex = getSelectedIndex();
+            if (clientSideZeroIndex == -1) {
+                LoggerFactory.getLogger(Tabs.class).debug(
+                        "The selection event is ignored at this point since the number of tabs is not known yet");
+                return;
+            } else if (selectedIndex >= clientSideZeroIndex) {
+                Component selectedComponent = getComponentAt(
+                        selectedIndex - clientSideZeroIndex);
+                if (!(selectedComponent instanceof Tab)) {
+                    throw new IllegalStateException(
+                            "Illegal component inside Tabs: "
+                                    + selectedComponent);
+                }
+                currentlySelected = (Tab) selectedComponent;
+            }
+        } else {
+            currentlySelected = getSelectedTab();
+        }
+
+        doUpdateSelectedTab(changedFromClient, currentlySelected);
+    }
+
+    private void doUpdateSelectedTab(boolean changedFromClient,
+            Tab currentlySelected) {
+        int selectedIndex = getSelectedIndex();
+        /*
+         * We should also track selectedIndex changes to be able to send
+         * SelectedChangeEvents for the tabs which are not available on the
+         * server side (pure client-side in case of @Id injection). The Tab
+         * instance on the server side is null but the index still makes sense
+         * and its value is updated.
+         */
+        if (Objects.equals(currentlySelected, previouslySelectedTab)
+                && previouslySelectedIndex == selectedIndex) {
             return;
         }
 
         if (currentlySelected == null || currentlySelected.isEnabled()) {
-            selectedTab = currentlySelected;
+            previouslySelectedTab = currentlySelected;
+            previouslySelectedIndex = selectedIndex;
             getChildren().filter(Tab.class::isInstance).map(Tab.class::cast)
                     .forEach(tab -> tab.setSelected(false));
 
-            if (selectedTab != null) {
-                selectedTab.setSelected(true);
+            if (previouslySelectedTab != null) {
+                previouslySelectedTab.setSelected(true);
             }
-
+            selectedTab = currentlySelected;
             fireEvent(new SelectedChangeEvent(this, changedFromClient));
         } else {
             updateEnabled(currentlySelected);
-            setSelectedTab(selectedTab);
+            setSelectedTab(previouslySelectedTab);
         }
     }
 

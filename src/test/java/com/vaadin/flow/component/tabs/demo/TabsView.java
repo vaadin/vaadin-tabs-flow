@@ -68,7 +68,7 @@ public class TabsView extends DemoView {
         Tabs tabs = new Tabs(tab1, tab2, tab3);
         tabs.addThemeVariants(TabsVariant.LUMO_SMALL);
         // end-source-example
-        
+
         addVariantsDemo(() -> {
             return tabs;
         }, GeneratedVaadinTabs::addThemeVariants,
