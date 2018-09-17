@@ -304,7 +304,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         this.selectedTab = selectedTab;
         doUpdateSelectedTab(selectedTab);
         getElement().executeJavaScript("var i = 0; var child = $0;\n "
-                + "while( (child = child.previousSibling) != null && child.tagName !=null &&  child.tagName.toLowerCase() =='vaadin-tab') "
+                + "while( (child = child.previousSibling) != null &&  child.nodeName.toLowerCase() =='vaadin-tab') "
                 + "{ i++; }\n this.selected = i;", selectedTab.getElement());
     }
 
