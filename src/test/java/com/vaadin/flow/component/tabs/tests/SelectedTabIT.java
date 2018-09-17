@@ -97,7 +97,7 @@ public class SelectedTabIT extends AbstractComponentIT {
     @Test // https://github.com/vaadin/vaadin-tabs-flow/issues/69
     public void addTabAsFirstWithElementAPI_selectionIsChanged_eventFromClient() {
         findElement(By.id("add-first-with-element-api")).click();
-        assertSelectionEvent(1, "asdf client");
+        assertSelectionEvent(2, "asdf client");
     }
 
     @Test
