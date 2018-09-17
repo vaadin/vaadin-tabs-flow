@@ -253,7 +253,23 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * @return the selected tab, or {@code null} if none is selected
      */
     public Tab getSelectedTab() {
-        return selectedTab;
+        if (clientSideZeroIndex == -1) {
+            LoggerFactory.getLogger(Tabs.class).debug(
+                    "The selection event is ignored at this point since the number of tabs is not known yet");
+            return selectedTab;
+        } else {
+            int selectedIndex = getSelectedIndex() - clientSideZeroIndex;
+            if (selectedIndex < 0) {
+                return null;
+            }
+
+            Component selectedComponent = getComponentAt(selectedIndex);
+            if (!(selectedComponent instanceof Tab)) {
+                throw new IllegalStateException(
+                        "Illegal component inside Tabs: " + selectedComponent);
+            }
+            return (Tab) selectedComponent;
+        }
     }
 
     /**
@@ -363,38 +379,13 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     }
 
     private void updateSelectedTab(boolean changedFromClient) {
-        if (changedFromClient && getSelectedIndex() < -1) {
+        if (getSelectedIndex() < -1) {
             setSelectedIndex(-1);
             return;
         }
 
-        Tab currentlySelected = null;
+        Tab currentlySelected = getSelectedTab();
 
-        if (changedFromClient) {
-            int selectedIndex = getSelectedIndex();
-            if (clientSideZeroIndex == -1) {
-                LoggerFactory.getLogger(Tabs.class).debug(
-                        "The selection event is ignored at this point since the number of tabs is not known yet");
-                return;
-            } else if (selectedIndex >= clientSideZeroIndex) {
-                Component selectedComponent = getComponentAt(
-                        selectedIndex - clientSideZeroIndex);
-                if (!(selectedComponent instanceof Tab)) {
-                    throw new IllegalStateException(
-                            "Illegal component inside Tabs: "
-                                    + selectedComponent);
-                }
-                currentlySelected = (Tab) selectedComponent;
-            }
-        } else {
-            currentlySelected = getSelectedTab();
-        }
-
-        doUpdateSelectedTab(changedFromClient, currentlySelected);
-    }
-
-    private void doUpdateSelectedTab(boolean changedFromClient,
-            Tab currentlySelected) {
         int selectedIndex = getSelectedIndex();
         /*
          * We should also track selectedIndex changes to be able to send
@@ -417,7 +408,6 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
             if (previouslySelectedTab != null) {
                 previouslySelectedTab.setSelected(true);
             }
-            selectedTab = currentlySelected;
             fireEvent(new SelectedChangeEvent(this, changedFromClient));
         } else {
             updateEnabled(currentlySelected);

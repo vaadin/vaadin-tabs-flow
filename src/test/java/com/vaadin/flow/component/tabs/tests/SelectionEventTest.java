@@ -57,6 +57,7 @@ public class SelectionEventTest {
     @Test
     public void changeSelectionInServerSide_eventFiredSynchronously() {
         tabs.setSelectedTab(tab2);
+        tabs.setSelectedIndex(1);
         Assert.assertEquals(
                 "Selection event should have been fired immediately after "
                         + "changing the selection on server side.",
@@ -102,6 +103,7 @@ public class SelectionEventTest {
     @Test
     public void removeEarlierTab_selectionNotChanged() {
         tabs.setSelectedTab(tab2);
+        tabs.setSelectedIndex(1);
         Assert.assertEquals(1, eventCount);
         tabs.remove(tab1);
 
@@ -175,6 +177,7 @@ public class SelectionEventTest {
     @Test
     public void selectLastTab_removeLastTab_secondLastTabIsSelected() {
         tabs.setSelectedTab(tab2);
+        tabs.setSelectedIndex(1);
         Assert.assertEquals(1, eventCount);
         tabs.remove(tab2);
         Assert.assertEquals(
@@ -200,6 +203,7 @@ public class SelectionEventTest {
     @Test
     public void removeNonChildTab_selectionNotChanged() {
         tabs.setSelectedTab(tab2);
+        tabs.setSelectedIndex(1);
         Assert.assertEquals(1, eventCount);
         Tab orphan = new Tab();
         tabs.remove(orphan);
@@ -248,8 +252,9 @@ public class SelectionEventTest {
 
     @Test
     public void unselect_selectOldSelection_eventFired() {
-        tabs.setSelectedIndex(-1);
+        tabs.setSelectedTab(null);
         tabs.setSelectedIndex(0);
+        tabs.setSelectedTab(tab1);
         Assert.assertEquals("Selection event should have been fired", 2,
                 eventCount);
         Assert.assertEquals("Selected tab should be the one which was selected",
