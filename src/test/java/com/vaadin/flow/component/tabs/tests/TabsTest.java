@@ -19,6 +19,10 @@ package com.vaadin.flow.component.tabs.tests;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.stream.Stream;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -37,8 +41,10 @@ public class TabsTest {
     public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void createTabsInDefaultState() {
+    public void createTabsInDefaultState()
+            throws IllegalAccessException, InvocationTargetException {
         Tabs tabs = new Tabs();
+        initZeroIndex(tabs);
 
         assertThat("Initial child count is invalid", tabs.getComponentCount(),
                 is(0));
@@ -51,11 +57,13 @@ public class TabsTest {
     }
 
     @Test
-    public void createTabsWithChildren() {
+    public void createTabsWithChildren()
+            throws IllegalAccessException, InvocationTargetException {
         Tab tab1 = new Tab("Tab one");
         Tab tab2 = new Tab("Tab two");
         Tab tab3 = new Tab("Tab three");
         Tabs tabs = new Tabs(tab1, tab2, tab3);
+        initZeroIndex(tabs);
 
         assertThat("Initial child count is invalid", tabs.getComponentCount(),
                 is(3));
@@ -78,7 +86,8 @@ public class TabsTest {
     }
 
     @Test
-    public void selectTabByReference() {
+    public void selectTabByReference()
+            throws IllegalAccessException, InvocationTargetException {
         Tab tab1 = new Tab("Tab one");
         Tab tab2 = new Tab("Tab two");
         Tab tab3 = new Tab("Tab three");
@@ -87,15 +96,16 @@ public class TabsTest {
         tabs.setSelectedTab(tab2);
 
         assertThat("Selected tab is invalid", tabs.getSelectedTab(), is(tab2));
-        assertThat("Selected index is invalid", tabs.getSelectedIndex(), is(1));
     }
 
     @Test
-    public void selectTabByIndex() {
+    public void selectTabByIndex()
+            throws IllegalAccessException, InvocationTargetException {
         Tab tab1 = new Tab("Tab one");
         Tab tab2 = new Tab("Tab two");
         Tab tab3 = new Tab("Tab three");
         Tabs tabs = new Tabs(tab1, tab2, tab3);
+        initZeroIndex(tabs);
 
         tabs.setSelectedIndex(2);
 
@@ -143,7 +153,8 @@ public class TabsTest {
     }
 
     @Test
-    public void selectTab_tabIsSelected() {
+    public void selectTab_tabIsSelected()
+            throws IllegalAccessException, InvocationTargetException {
         Tabs tabs = new Tabs();
         Tab tab1 = new Tab("foo");
         Tab tab2 = new Tab("foo");
@@ -153,5 +164,14 @@ public class TabsTest {
 
         Assert.assertFalse(tab1.isSelected());
         Assert.assertTrue(tab2.isSelected());
+    }
+
+    private void initZeroIndex(Tabs tabs)
+            throws IllegalAccessException, InvocationTargetException {
+        Method setZeroIndex = Stream.of(Tabs.class.getDeclaredMethods())
+                .filter(method -> method.getName().equals("setZeroIndex"))
+                .findFirst().get();
+        setZeroIndex.setAccessible(true);
+        setZeroIndex.invoke(tabs, 0);
     }
 }

@@ -302,6 +302,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
                     "Tab to select must be a child: " + selectedTab);
         }
         this.selectedTab = selectedTab;
+        doUpdateSelectedTab(selectedTab);
         getElement().executeJavaScript("var i = 0; var child = $0;\n "
                 + "while( (child = child.previousSibling) != null && child.tagName !=null &&  child.tagName.toLowerCase() =='vaadin-tab') "
                 + "{ i++; }\n this.selected = i;", selectedTab.getElement());
@@ -413,16 +414,20 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         if (currentlySelected == null || currentlySelected.isEnabled()) {
             previouslySelectedTab = currentlySelected;
             previouslySelectedIndex = selectedIndex;
-            getChildren().filter(Tab.class::isInstance).map(Tab.class::cast)
-                    .forEach(tab -> tab.setSelected(false));
-
-            if (previouslySelectedTab != null) {
-                previouslySelectedTab.setSelected(true);
-            }
+            doUpdateSelectedTab(currentlySelected);
             fireEvent(new SelectedChangeEvent(this, changedFromClient));
         } else {
             updateEnabled(currentlySelected);
             setSelectedTab(previouslySelectedTab);
+        }
+    }
+
+    private void doUpdateSelectedTab(Tab selected) {
+        getChildren().filter(Tab.class::isInstance).map(Tab.class::cast)
+                .filter(tab -> !tab.equals(selected))
+                .forEach(tab -> tab.setSelected(false));
+        if (selected != null) {
+            selected.setSelected(true);
         }
     }
 
