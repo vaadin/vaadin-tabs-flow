@@ -372,6 +372,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     @ClientCallable
     private void itemsChanged() {
         if (clientSideZeroIndex == 0) {
+            updateSelectedTab(true);
             // Initially the clientSideZeroIndex's value is -1 which means we
             // don't know the index. Then it's set via this call. If at some
             // point the index becomes zero then it means that all client side
