@@ -249,6 +249,17 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * Gets the currently selected tab.
+     * <p>
+     * The selected tab maybe {@code null} even if there is a selected tab on
+     * the client side (so the selected index is not {@code -1}). It happens if
+     * a {@code Tabs} instance is injected via {@code @Id} into some template
+     * and the instance has a number of {@literal "vaadin-tab"} elements inside
+     * it. Such elements are client side only without a server side counterpart
+     * and we may not return a {@code Tab} instance for such selection. You
+     * still may call {@link #getSelectedIndex()} method to get the client side
+     * index of the selected tab though.
+     *
+     * @see #getSelectedIndex()
      *
      * @return the selected tab, or {@code null} if none is selected
      */
