@@ -21,8 +21,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -267,23 +265,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * @return the selected tab, or {@code null} if none is selected
      */
     public Tab getSelectedTab() {
-        if (clientSideZeroIndex == -1) {
-            LoggerFactory.getLogger(Tabs.class).debug(
-                    "The selection event is ignored at this point since the number of tabs is not known yet");
-            return selectedTab;
-        } else {
-            int selectedIndex = getSelectedIndex() - clientSideZeroIndex;
-            if (selectedIndex < 0) {
-                return null;
-            }
-
-            Component selectedComponent = getComponentAt(selectedIndex);
-            if (!(selectedComponent instanceof Tab)) {
-                throw new IllegalStateException(
-                        "Illegal component inside Tabs: " + selectedComponent);
-            }
-            return (Tab) selectedComponent;
-        }
+        return selectedTab;
     }
 
     /**
@@ -418,6 +400,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         if (currentlySelected == null || currentlySelected.isEnabled()) {
             previouslySelectedTab = currentlySelected;
             previouslySelectedIndex = selectedIndex;
+            selectedTab = currentlySelected;
             doUpdateSelectedTab(currentlySelected);
             fireEvent(new SelectedChangeEvent(this, changedFromClient));
         } else {
