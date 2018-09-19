@@ -94,6 +94,7 @@ public class TabsTest {
         Tabs tabs = new Tabs(tab1, tab2, tab3);
 
         tabs.setSelectedTab(tab2);
+        tabs.setSelectedIndex(1);
 
         assertThat("Selected tab is invalid", tabs.getSelectedTab(), is(tab2));
     }
