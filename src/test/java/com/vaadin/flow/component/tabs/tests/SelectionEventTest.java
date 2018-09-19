@@ -17,8 +17,6 @@
 package com.vaadin.flow.component.tabs.tests;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,8 +44,6 @@ public class SelectionEventTest {
         tabs = new Tabs(tab1, tab2);
 
         eventCount = 0;
-
-        initZeroIndex();
 
         tabs.addSelectedChangeListener(e -> {
             eventCount++;
@@ -273,15 +269,6 @@ public class SelectionEventTest {
         Assert.assertEquals(
                 "Selection was not changed, no event should've been fired", 1,
                 eventCount);
-    }
-
-    private void initZeroIndex()
-            throws IllegalAccessException, InvocationTargetException {
-        Method setZeroIndex = Stream.of(Tabs.class.getDeclaredMethods())
-                .filter(method -> method.getName().equals("setZeroIndex"))
-                .findFirst().get();
-        setZeroIndex.setAccessible(true);
-        setZeroIndex.invoke(tabs, 0);
     }
 
 }

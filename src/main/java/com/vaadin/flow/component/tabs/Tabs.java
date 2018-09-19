@@ -78,6 +78,9 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         previouslySelectedIndex = -1;
         getElement().addPropertyChangeListener(SELECTED,
                 event -> updateSelectedTab(event.isUserOriginated()));
+        if (!isTemplateMapped()) {
+            clientSideZeroIndex = 0;
+        }
     }
 
     /**
