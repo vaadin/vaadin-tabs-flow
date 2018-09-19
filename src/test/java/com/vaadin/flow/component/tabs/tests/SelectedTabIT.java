@@ -57,28 +57,25 @@ public class SelectedTabIT extends AbstractComponentIT {
     @Test
     public void removeSelectedTabFromServer_changeEventFromServer() {
         findElement(By.id("delete")).click();
-        assertSelectionEvent(2, "bar server");
+        assertSelectionEvent(1, "bar server");
     }
 
     @Test
     public void selectSecondTab_eventFromClient_deleteFirstTab_noEvent() {
         findElement(By.id("second")).click();
-        assertSelectionEvent(2, "bar client");
+        assertSelectionEvent(1, "bar client");
         findElement(By.id("delete-first")).click();
-        assertSelectionEvent(2, "bar client");
+        assertSelectionEvent(1, "bar client");
     }
 
     @Test
     public void addTabAsFirst_noEvent() {
-        assertSelectionEvent(1, "foo client");
         findElement(By.id("add-first")).click();
-        assertSelectionEvent(1, "foo client");
+        assertSelectionEvent(0, null);
     }
 
     @Test
     public void selectDisabledTab_noSelectionEvent_tabIsRedisabled() {
-        assertSelectionEvent(1, "foo client");
-
         List<TestBenchElement> tabs = $("vaadin-tabs").first().$("vaadin-tab")
                 .all();
         TestBenchElement lastTab = tabs.get(tabs.size() - 1);
@@ -88,7 +85,7 @@ public class SelectedTabIT extends AbstractComponentIT {
 
         lastTab.click();
 
-        assertSelectionEvent(1, "foo client");
+        assertSelectionEvent(0, null);
 
         Assert.assertEquals(Boolean.TRUE.toString(),
                 lastTab.getAttribute("disabled"));
@@ -97,7 +94,7 @@ public class SelectedTabIT extends AbstractComponentIT {
     @Test // https://github.com/vaadin/vaadin-tabs-flow/issues/69
     public void addTabAsFirstWithElementAPI_selectionIsChanged_eventFromClient() {
         findElement(By.id("add-first-with-element-api")).click();
-        assertSelectionEvent(2, "asdf client");
+        assertSelectionEvent(0, "asdf client");
     }
 
     @Test
@@ -106,19 +103,19 @@ public class SelectedTabIT extends AbstractComponentIT {
                 .all();
 
         clickElementWithJs("unselect");
-        assertSelectionEvent(2, "null server");
+        assertSelectionEvent(1, "null server");
 
         tabs.get(0).click();
-        assertSelectionEvent(3, "foo client");
+        assertSelectionEvent(2, "foo client");
 
         clickElementWithJs("unselect-with-index");
-        assertSelectionEvent(4, "null server");
+        assertSelectionEvent(3, "null server");
 
         clickElementWithJs("unselect");
-        assertSelectionEvent(4, "null server"); // no event
+        assertSelectionEvent(3, "null server"); // no event
 
         clickElementWithJs("set-selected-tab");
-        assertSelectionEvent(5, "bar client");
+        assertSelectionEvent(4, "bar client");
     }
 
     private void assertSelectionEvent(int amountOfEvents,
