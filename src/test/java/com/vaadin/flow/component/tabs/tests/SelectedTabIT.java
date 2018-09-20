@@ -71,9 +71,7 @@ public class SelectedTabIT extends AbstractComponentIT {
     @Test
     public void addTabAsFirst_tabChangedEvent() {
         findElement(By.id("add-first")).click();
-        // the selected index is not changed but the tab is changed so there is
-        // an event
-        assertSelectionEvent(1, "baz client");
+        assertSelectionEvent(0, null);
     }
 
     @Test

@@ -457,7 +457,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
         if (changedFromClient) {
             needFireEvent = needFireEvent || (currentlySelected == null
-                    && previouslySelectedIndex != currentlySelectedIndex);
+                    && previouslySelectedIndex != currentlySelectedIndex
+                    && currentlySelectedIndex != -1);
         }
 
         if (currentlySelected == null || currentlySelected.isEnabled()) {
