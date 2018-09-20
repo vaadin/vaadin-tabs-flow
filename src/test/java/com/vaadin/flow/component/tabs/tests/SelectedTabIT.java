@@ -69,9 +69,11 @@ public class SelectedTabIT extends AbstractComponentIT {
     }
 
     @Test
-    public void addTabAsFirst_noEvent() {
+    public void addTabAsFirst_tabChangedEvent() {
         findElement(By.id("add-first")).click();
-        assertSelectionEvent(0, null);
+        // the selected index is not changed but the tab is changed so there is
+        // an event
+        assertSelectionEvent(1, "baz client");
     }
 
     @Test
@@ -94,7 +96,7 @@ public class SelectedTabIT extends AbstractComponentIT {
     @Test // https://github.com/vaadin/vaadin-tabs-flow/issues/69
     public void addTabAsFirstWithElementAPI_selectionIsChanged_eventFromClient() {
         findElement(By.id("add-first-with-element-api")).click();
-        assertSelectionEvent(0, "asdf client");
+        assertSelectionEvent(1, "asdf client");
     }
 
     @Test
@@ -109,13 +111,13 @@ public class SelectedTabIT extends AbstractComponentIT {
         assertSelectionEvent(2, "foo client");
 
         clickElementWithJs("unselect-with-index");
-        assertSelectionEvent(3, "null server");
+        assertSelectionEvent(3, "null client");
 
         clickElementWithJs("unselect");
-        assertSelectionEvent(3, "null server"); // no event
+        assertSelectionEvent(3, "null client"); // no event
 
         clickElementWithJs("set-selected-tab");
-        assertSelectionEvent(4, "bar client");
+        assertSelectionEvent(4, "bar server");
     }
 
     private void assertSelectionEvent(int amountOfEvents,

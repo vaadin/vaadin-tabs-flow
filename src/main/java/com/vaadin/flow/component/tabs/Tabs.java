@@ -428,7 +428,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
          */
         if (Objects.equals(getEventSelectedTab(changedFromClient),
                 previouslySelectedTab)
-                && previouslySelectedIndex == getSelectedIndex()) {
+                && previouslySelectedIndex == getElement().getProperty(SELECTED,
+                        -1)) {
             return;
         }
 
@@ -449,16 +450,22 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     private void handleSelectedTab(boolean changedFromClient) {
         Tab currentlySelected = getEventSelectedTab(changedFromClient);
+        int currentlySelectedIndex = getElement().getProperty(SELECTED, -1);
 
-        boolean tabIsChanged = !Objects.equals(currentlySelected,
+        boolean needFireEvent = !Objects.equals(currentlySelected,
                 previouslySelectedTab);
 
+        if (changedFromClient) {
+            needFireEvent = needFireEvent || (currentlySelected == null
+                    && previouslySelectedIndex != currentlySelectedIndex);
+        }
+
         if (currentlySelected == null || currentlySelected.isEnabled()) {
-            selectedIndex = getElement().getProperty(SELECTED, -1);
+            selectedIndex = currentlySelectedIndex;
             previouslySelectedIndex = selectedIndex;
             previouslySelectedTab = currentlySelected;
             selectedTab = currentlySelected;
-            if (tabIsChanged) {
+            if (needFireEvent) {
                 doUpdateSelectedTab(currentlySelected);
                 fireEvent(new SelectedChangeEvent(this, changedFromClient));
             }
