@@ -17,8 +17,11 @@
 package com.vaadin.flow.component.tabs;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -54,9 +57,10 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     private static final String SELECTED = "selected";
 
     private Tab selectedTab;
+    private int selectedIndex = -1;
 
     private transient Tab previouslySelectedTab;
-    private int previouslySelectedIndex;
+    private int previouslySelectedIndex = -1;
 
     private int clientSideZeroIndex = -1;
 
@@ -73,7 +77,6 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      */
     public Tabs() {
         setSelectedIndex(-1);
-        previouslySelectedIndex = -1;
         getElement().addPropertyChangeListener(SELECTED,
                 event -> updateSelectedTab(event.isUserOriginated()));
         if (!isTemplateMapped()) {
@@ -107,9 +110,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     public void add(Component... components) {
         boolean wasEmpty = getComponentCount() == 0;
         HasOrderedComponents.super.add(components);
-        if (wasEmpty) {
+        Optional<Component> firstTab = Stream.of(components)
+                .filter(component -> component instanceof Tab).findFirst();
+        if (wasEmpty && firstTab.isPresent()) {
             assert getSelectedIndex() == -1;
-            setSelectedIndex(0);
+            setSelectedTab((Tab) firstTab.get());
         } else {
             updateSelectedTab(false);
         }
@@ -124,14 +129,35 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      */
     @Override
     public void remove(Component... components) {
+        if (components.length == 0) {
+            return;
+        }
+
+        if (selectedTab == null) {
+            return;
+        }
+
+        int selectedServerSideIndex = 0;
+
+        List<Component> children = getChildren().collect(Collectors.toList());
+        for (Component component : children) {
+            if (component.equals(selectedTab)) {
+                break;
+            }
+            selectedServerSideIndex++;
+        }
+
+        int selectedIndex = selectedServerSideIndex;
         int lowerIndices = (int) Stream.of(components).map(this::indexOf)
-                .filter(index -> index >= 0 && index < getSelectedIndex())
-                .count();
+                .filter(index -> index >= 0 && index < selectedIndex).count();
 
         HasOrderedComponents.super.remove(components);
+        if (Stream.of(components).filter(component -> component instanceof Tab)
+                .count() == 0) {
+            return;
+        }
 
-        // Prevents changing the selected tab
-        int newSelectedIndex = getSelectedIndex() - lowerIndices;
+        int newSelectedIndex = selectedServerSideIndex - lowerIndices;
 
         // In case the last tab was removed
         if (newSelectedIndex > 0 && newSelectedIndex >= getComponentCount()) {
@@ -142,13 +168,16 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
             newSelectedIndex = -1;
         }
 
-        if (newSelectedIndex != getSelectedIndex()) {
-            setSelectedIndex(newSelectedIndex);
+        Tab tabToSelect;
+
+        if (newSelectedIndex == -1) {
+            tabToSelect = null;
         } else {
-            selectedTab = (Tab) getChildren().skip(newSelectedIndex).findFirst()
-                    .get();
-            updateSelectedTab(false);
+            tabToSelect = (Tab) getChildren().skip(newSelectedIndex).findFirst()
+                    .orElse(null);
         }
+
+        setSelectedTab(tabToSelect);
     }
 
     /**
@@ -162,8 +191,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         if (getSelectedIndex() > -1) {
             setSelectedIndex(-1);
         } else {
-            selectedTab = null;
-            updateSelectedTab(false);
+            setSelectedTab(null);
         }
     }
 
@@ -192,7 +220,10 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     @Override
     public void replace(Component oldComponent, Component newComponent) {
         HasOrderedComponents.super.replace(oldComponent, newComponent);
-        updateSelectedTab(false);
+        if (oldComponent != null && oldComponent.equals(selectedTab)
+                && newComponent instanceof Tab) {
+            setSelectedTab((Tab) newComponent);
+        }
     }
 
     /**
@@ -234,7 +265,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      */
     @Synchronize(property = SELECTED, value = "selected-changed")
     public int getSelectedIndex() {
-        return getElement().getProperty(SELECTED, -1);
+        return selectedIndex;
     }
 
     /**
@@ -244,8 +275,13 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      *            the zero-based index of the selected tab, -1 to unselect all
      */
     public void setSelectedIndex(int selectedIndex) {
-        previouslySelectedIndex = selectedIndex;
-        getElement().setProperty(SELECTED, selectedIndex);
+        if (selectedIndex < -1) {
+            this.selectedIndex = -1;
+        } else {
+            this.selectedIndex = selectedIndex;
+        }
+        getElement().executeJavaScript("this.selected = $0;",
+                this.selectedIndex);
     }
 
     /**
@@ -277,20 +313,21 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      *             if {@code selectedTab} is not a child of this component
      */
     public void setSelectedTab(Tab selectedTab) {
-        if (selectedTab == null) {
-            setSelectedIndex(-1);
-            return;
-        }
-
-        if (selectedTab.getParent().orElse(null) != this) {
+        if (selectedTab != null
+                && selectedTab.getParent().orElse(null) != this) {
             throw new IllegalArgumentException(
                     "Tab to select must be a child: " + selectedTab);
         }
         this.selectedTab = selectedTab;
-        doUpdateSelectedTab(selectedTab);
-        getElement().executeJavaScript("var i = 0; var child = $0;\n "
-                + "while( (child = child.previousSibling) != null &&  child.nodeName.toLowerCase() =='vaadin-tab') "
-                + "{ i++; }\n this.selected = i;", selectedTab.getElement());
+        handleSelectedTab(false);
+        if (selectedTab == null) {
+            getElement().executeJavaScript("this.selected = -1;");
+        } else {
+            getElement().executeJavaScript("var i = 0; var child = $0;\n "
+                    + "while( (child = child.previousSibling) != null &&  child.nodeName.toLowerCase() =='vaadin-tab') "
+                    + "{ i++; }\n this.selected = i;",
+                    selectedTab.getElement());
+        }
     }
 
     /**
@@ -382,9 +419,6 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
             return;
         }
 
-        Tab currentlySelected = getSelectedTab();
-
-        int selectedIndex = getSelectedIndex();
         /*
          * We should also track selectedIndex changes to be able to send
          * SelectedChangeEvents for the tabs which are not available on the
@@ -392,17 +426,42 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
          * instance on the server side is null but the index still makes sense
          * and its value is updated.
          */
-        if (Objects.equals(currentlySelected, previouslySelectedTab)
-                && previouslySelectedIndex == selectedIndex) {
+        if (Objects.equals(getEventSelectedTab(changedFromClient),
+                previouslySelectedTab)
+                && previouslySelectedIndex == getSelectedIndex()) {
             return;
         }
 
+        handleSelectedTab(changedFromClient);
+    }
+
+    private Tab getEventSelectedTab(boolean changedFromClient) {
+        Tab currentlySelected = getSelectedTab();
+        if (changedFromClient && clientSideZeroIndex != -1) {
+            int index = getElement().getProperty(SELECTED, -1)
+                    - clientSideZeroIndex;
+            currentlySelected = index >= 0
+                    ? (Tab) getChildren().skip(index).findFirst().orElse(null)
+                    : null;
+        }
+        return currentlySelected;
+    }
+
+    private void handleSelectedTab(boolean changedFromClient) {
+        Tab currentlySelected = getEventSelectedTab(changedFromClient);
+
+        boolean tabIsChanged = !Objects.equals(currentlySelected,
+                previouslySelectedTab);
+
         if (currentlySelected == null || currentlySelected.isEnabled()) {
-            previouslySelectedTab = currentlySelected;
+            selectedIndex = getElement().getProperty(SELECTED, -1);
             previouslySelectedIndex = selectedIndex;
+            previouslySelectedTab = currentlySelected;
             selectedTab = currentlySelected;
-            doUpdateSelectedTab(currentlySelected);
-            fireEvent(new SelectedChangeEvent(this, changedFromClient));
+            if (tabIsChanged) {
+                doUpdateSelectedTab(currentlySelected);
+                fireEvent(new SelectedChangeEvent(this, changedFromClient));
+            }
         } else {
             updateEnabled(currentlySelected);
             setSelectedTab(previouslySelectedTab);

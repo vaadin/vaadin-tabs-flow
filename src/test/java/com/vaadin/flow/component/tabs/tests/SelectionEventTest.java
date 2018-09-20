@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 
 /**
  * @author Vaadin Ltd.
@@ -63,13 +64,12 @@ public class SelectionEventTest {
         Assert.assertEquals("The tab was already selected, selection event "
                 + "should not have been fired.", 1, eventCount);
 
-        tabs.setSelectedIndex(0);
+        tabs.setSelectedTab(tab1);
         Assert.assertEquals(
                 "Selection event should have been fired immediately after "
                         + "changing the selection on server side.",
                 2, eventCount);
 
-        tabs.setSelectedIndex(0);
         Assert.assertEquals("The tab was already selected, selection event "
                 + "should not have been fired.", 2, eventCount);
     }
@@ -83,7 +83,7 @@ public class SelectionEventTest {
                 1, eventCount);
         Assert.assertEquals(
                 "The next tab should be selected after removing the selected tab",
-                tabs.getSelectedTab(), tab2);
+                tab2, tabs.getSelectedTab());
     }
 
     @Test
@@ -99,17 +99,12 @@ public class SelectionEventTest {
     @Test
     public void removeEarlierTab_selectionNotChanged() {
         tabs.setSelectedTab(tab2);
-        tabs.setSelectedIndex(1);
         Assert.assertEquals(1, eventCount);
         tabs.remove(tab1);
 
         Assert.assertEquals(
                 "Selection event should not have been fired after removing the other tab",
                 1, eventCount);
-
-        Assert.assertEquals(
-                "The selected index should have been reduced to keep the old selection",
-                0, tabs.getSelectedIndex());
 
         Assert.assertEquals("The selected tab should not have been changed",
                 tabs.getSelectedTab(), tab2);
@@ -134,7 +129,7 @@ public class SelectionEventTest {
 
     @Test
     public void selectSecondTab_removeAll_selectionChangedToNull_selectedIndexMinusOne() {
-        tabs.setSelectedIndex(1);
+        tabs.setSelectedTab(tab2);
         Assert.assertEquals(1, eventCount);
 
         tabs.removeAll();
@@ -164,10 +159,6 @@ public class SelectionEventTest {
         Assert.assertEquals(
                 "Selection should not have been changed after adding new tabs",
                 tab1, tabs.getSelectedTab());
-
-        Assert.assertEquals(
-                "Selected index should have been incremented after adding new tab in the beginning",
-                1, tabs.getSelectedIndex());
     }
 
     @Test
@@ -226,7 +217,11 @@ public class SelectionEventTest {
 
     @Test
     public void unselectWithIndex() {
+        tabs.setSelectedIndex(0);
+        tabs.getElement().setProperty("selected", 0);
         tabs.setSelectedIndex(-1);
+        tabs.getElement().getNode().getFeature(ElementPropertyMap.class)
+                .setProperty("selected", -1, false);
         Assert.assertEquals("Unselecting the selected tab should fire event", 1,
                 eventCount);
         Assert.assertEquals("The selected tab should be null after unselecting",
@@ -235,7 +230,11 @@ public class SelectionEventTest {
 
     @Test
     public void unselectWithAnyNegativeIndex_selectedIndexMinusOne() {
+        tabs.setSelectedIndex(1);
+        tabs.getElement().setProperty("selected", 1);
         tabs.setSelectedIndex(-100);
+        tabs.getElement().getNode().getFeature(ElementPropertyMap.class)
+                .setProperty("selected", -1, false);
         Assert.assertEquals("Unselecting the selected tab should fire event", 1,
                 eventCount);
         Assert.assertEquals("The selected tab should be null after unselecting",

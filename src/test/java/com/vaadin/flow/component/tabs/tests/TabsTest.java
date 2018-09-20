@@ -20,8 +20,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -31,6 +29,7 @@ import org.junit.rules.ExpectedException;
 
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 
 /**
  * @author Vaadin Ltd.
@@ -44,7 +43,6 @@ public class TabsTest {
     public void createTabsInDefaultState()
             throws IllegalAccessException, InvocationTargetException {
         Tabs tabs = new Tabs();
-        initZeroIndex(tabs);
 
         assertThat("Initial child count is invalid", tabs.getComponentCount(),
                 is(0));
@@ -63,7 +61,6 @@ public class TabsTest {
         Tab tab2 = new Tab("Tab two");
         Tab tab3 = new Tab("Tab three");
         Tabs tabs = new Tabs(tab1, tab2, tab3);
-        initZeroIndex(tabs);
 
         assertThat("Initial child count is invalid", tabs.getComponentCount(),
                 is(3));
@@ -71,8 +68,6 @@ public class TabsTest {
                 is(Tabs.Orientation.HORIZONTAL));
         assertThat("Initial selected tab is invalid", tabs.getSelectedTab(),
                 is(tab1));
-        assertThat("Initial selected index is invalid", tabs.getSelectedIndex(),
-                is(0));
     }
 
     @Test
@@ -94,7 +89,6 @@ public class TabsTest {
         Tabs tabs = new Tabs(tab1, tab2, tab3);
 
         tabs.setSelectedTab(tab2);
-        tabs.setSelectedIndex(1);
 
         assertThat("Selected tab is invalid", tabs.getSelectedTab(), is(tab2));
     }
@@ -106,9 +100,10 @@ public class TabsTest {
         Tab tab2 = new Tab("Tab two");
         Tab tab3 = new Tab("Tab three");
         Tabs tabs = new Tabs(tab1, tab2, tab3);
-        initZeroIndex(tabs);
 
         tabs.setSelectedIndex(2);
+        tabs.getElement().getNode().getFeature(ElementPropertyMap.class)
+                .setProperty("selected", 2, false);
 
         assertThat("Selected tab is invalid", tabs.getSelectedTab(), is(tab3));
         assertThat("Selected index is invalid", tabs.getSelectedIndex(), is(2));
@@ -167,12 +162,4 @@ public class TabsTest {
         Assert.assertTrue(tab2.isSelected());
     }
 
-    private void initZeroIndex(Tabs tabs)
-            throws IllegalAccessException, InvocationTargetException {
-        Method setZeroIndex = Stream.of(Tabs.class.getDeclaredMethods())
-                .filter(method -> method.getName().equals("setZeroIndex"))
-                .findFirst().get();
-        setZeroIndex.setAccessible(true);
-        setZeroIndex.invoke(tabs, 0);
-    }
 }
