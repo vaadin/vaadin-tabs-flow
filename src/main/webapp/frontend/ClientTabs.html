@@ -1,0 +1,20 @@
+<link rel="import" href="/frontend/bower_components/polymer/polymer-element.html">
+<link rel="import" href="/frontend/bower_components/polymer/lib/elements/dom-repeat.html">
+
+<dom-module id="client-tabs">
+    <template>
+        <vaadin-tabs id="tabs">
+            <vaadin-tab>Tab one</vaadin-tab>
+            <vaadin-tab>Tab two</vaadin-tab>
+            <vaadin-tab>Tab three</vaadin-tab>
+        </vaadin-tabs>
+        <slot></slot>
+    </template>
+
+    <script>
+        class ClientTabs extends Polymer.Element {
+            static get is() { return 'client-tabs' }
+        }
+        customElements.define(ClientTabs.is, ClientTabs);
+    </script>
+</dom-module>

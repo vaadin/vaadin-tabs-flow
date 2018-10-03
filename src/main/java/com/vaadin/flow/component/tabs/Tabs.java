@@ -237,12 +237,14 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * Gets the currently selected tab.
+     * <p>
+     * Always returns {@code null} if Tabs is @Id mapped too a template.
      *
-     * @return the selected tab, or {@code null} if none is selected
+     * @return the selected tab, or {@code null} if none is selected or template mapper
      */
     public Tab getSelectedTab() {
         int selectedIndex = getSelectedIndex();
-        if (selectedIndex < 0) {
+        if (selectedIndex < 0 || isTemplateMapped()) {
             return null;
         }
 
@@ -337,7 +339,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
         Tab currentlySelected = getSelectedTab();
 
-        if (Objects.equals(currentlySelected, selectedTab)) {
+        if (Objects.equals(currentlySelected, selectedTab) && !isTemplateMapped()) {
             return;
         }
 
