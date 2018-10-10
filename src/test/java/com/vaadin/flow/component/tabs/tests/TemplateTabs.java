@@ -36,16 +36,22 @@ public class TemplateTabs extends PolymerTemplate<TemplateModel> {
     private final Label message;
 
     public TemplateTabs() {
+        setId("template");
         message = new Label();
-        message.setId("messsage-label");
+        message.setId("message-label");
 
-        tabs.add(new Tab("ServerSide"));
+        Tab serverSide = new Tab("ServerSide");
+        serverSide.setId("server-side");
+        tabs.add(serverSide);
         tabs.addSelectedChangeListener(selectedChangeEvent -> {
             String messageText;
             if (tabs.getSelectedTab() == null) {
-                messageText = String
-                        .format("Received selection for client-side tab with index '%s'",
-                                tabs.getSelectedIndex());
+                if(tabs.getSelectedIndex() == -1) {
+                    messageText = "Received select event for -1";
+                } else {
+                    messageText = String.format("Received selection for client-side tab with index '%s'",
+                            tabs.getSelectedIndex());
+                }
             } else {
                 messageText = String
                         .format("Received selection for server-side tab %s with index '%s'",

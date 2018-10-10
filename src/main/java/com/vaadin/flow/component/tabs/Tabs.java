@@ -75,6 +75,12 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         if (!isTemplateMapped()) {
             getElement().addPropertyChangeListener(SELECTED,
                     event -> updateSelectedTab(event.isUserOriginated()));
+        } else {
+            getElement().executeJavaScript(
+                    "$0.addEventListener('selected-changed', "
+                            + "function (event) { "
+                            + "this.$server.setSelectedId(Polymer.dom($0).children[event.detail.value].getAttribute('server-id')); "
+                            + "});");
         }
     }
 
@@ -83,7 +89,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * {@link Orientation#HORIZONTAL HORIZONTAL} orientation.
      *
      * @param tabs
-     *            the tabs to enclose
+     *         the tabs to enclose
      */
     public Tabs(Tab... tabs) {
         this();
@@ -94,7 +100,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * Adds the given tabs to the component.
      *
      * @param tabs
-     *            the tabs to enclose
+     *         the tabs to enclose
      */
     public void add(Tab... tabs) {
         add((Component[]) tabs);
@@ -102,10 +108,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     @Override
     public void add(Component... components) {
-        if(isTemplateMapped()) {
+        if (isTemplateMapped()) {
             Arrays.stream(components).forEach(component -> {
                 if (component instanceof Tab) {
-                    component.getElement().setProperty("id", id.incrementAndGet());
+                    component.getElement().setAttribute("server-id",
+                            Integer.toString(id.incrementAndGet()));
                 }
             });
         }
@@ -114,7 +121,10 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         HasOrderedComponents.super.add(components);
         if (wasEmpty) {
             assert getSelectedIndex() == -1;
-            setSelectedIndex(0);
+            // Selecting 0 makes no sense if there are client-side items.
+            if (!isTemplateMapped()) {
+                setSelectedIndex(0);
+            }
         } else {
             updateSelectedTab(false);
         }
@@ -175,9 +185,19 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * Adding a component before the currently selected tab will increment the
      * {@link #getSelectedIndex() selected index} to avoid changing the selected
      * tab.
+     *
+     * @throws UnsupportedOperationException
+     *         if Tabs is {@code @Id} template mapped as the at index would only
+     *         be for server-side components and not reflect to the client
+     *         correctly
      */
     @Override
     public void addComponentAtIndex(int index, Component component) {
+        if (isTemplateMapped()) {
+            throw new UnsupportedOperationException(
+                    "Adding items at index is not supported for '@Id' mapped component");
+        }
+
         HasOrderedComponents.super.addComponentAtIndex(index, component);
 
         if (index <= getSelectedIndex()) {
@@ -208,28 +228,32 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        getElement().getNode().runWhenAttached(
-                ui -> ui.beforeClientResponse(this, context -> {
-                    ui.getPage().executeJavaScript(
-                            "$0.addEventListener('items-changed', "
-                                    + "function(){ this.$server.updateSelectedTab(true); });",
-                            getElement());
-                }));
+        // updateSelectedTab is when not template mapped.
+        String serverCallFunction = "this.$server.updateSelectedTab(true);";
+
         if (isTemplateMapped()) {
+            serverCallFunction = "this.$server.setSelectedId(Polymer.dom($0).children[$0.selected].getAttribute('server-id'));";
+
+            final String updateInitialSelection = String
+                    .format("if($0.selected >= 0) { %s }", serverCallFunction);
             getElement().getNode().runWhenAttached(
-                    ui -> ui.beforeClientResponse(this, context -> {
-                        getElement().executeJavaScript(
-                                "$0.addEventListener('selected-changed', "
-                                        + "function (event) { this.$server.setSelectedId(Polymer.dom($0).children[event.detail.value].getAttribute('id')); });");
-                    }));
+                    ui -> ui.beforeClientResponse(this, context -> getElement()
+                            .executeJavaScript(updateInitialSelection)));
         }
+
+        final String addItemsChangedListener = String
+                .format("$0.addEventListener('items-changed',"
+                        + "function () { if($0.selected  >= 0) { %s }});", serverCallFunction);
+        getElement().getNode().runWhenAttached(
+                ui -> ui.beforeClientResponse(this, context -> getElement()
+                        .executeJavaScript(addItemsChangedListener)));
     }
 
     /**
      * Adds a listener for {@link SelectedChangeEvent}.
-     * 
+     *
      * @param listener
-     *            the listener to add, not <code>null</code>
+     *         the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
     public Registration addSelectedChangeListener(
@@ -239,9 +263,13 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * Gets the zero-based index of the currently selected tab.
+     * <p>
+     * Note! If tabs is {@code @Id} template mapped the selected index will
+     * be according to the client-side indexes and will not reflect correctly
+     * against server-side children.
      *
      * @return the zero-based index of the selected tab, or -1 if none of the
-     *         tabs is selected
+     * tabs is selected
      */
     @Synchronize(property = SELECTED, value = "selected-changed")
     public int getSelectedIndex() {
@@ -250,9 +278,12 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * Selects a tab based on its zero-based index.
+     * <p>
+     * Note! If {@code @Id} template mapped the developer needs to know and
+     * handle the offset from any client-side defined tab elements in tabs.
      *
      * @param selectedIndex
-     *            the zero-based index of the selected tab, -1 to unselect all
+     *         the zero-based index of the selected tab, -1 to unselect all
      */
     public void setSelectedIndex(int selectedIndex) {
         getElement().setProperty(SELECTED, selectedIndex);
@@ -261,9 +292,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     /**
      * Gets the currently selected tab.
      * <p>
-     * Always returns {@code null} if Tabs is @Id mapped too a template.
+     * Note! If Tabs is {@code @Id} template mapped the selected tab will
+     * be {@code null} for any client-side tab. If a server added tab is
+     * selected that will be returned by the method.
      *
-     * @return the selected tab, or {@code null} if none is selected or template mapper
+     * @return the selected tab, or {@code null} if none is selected or client-side tab
      */
     public Tab getSelectedTab() {
         int selectedIndex = getSelectedIndex();
@@ -274,7 +307,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         // if template mapped match tab selection by tab id if possible.
         if (isTemplateMapped()) {
             return getChildren().filter(Tab.class::isInstance)
-                    .filter(tab -> tab.getElement().getProperty("id")
+                    .filter(tab -> tab.getElement().getAttribute("server-id")
                             .equals(selectedId)).map(Tab.class::cast)
                     .findFirst().orElse(null);
         }
@@ -297,14 +330,20 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * Selects the given tab.
      *
      * @param selectedTab
-     *            the tab to select, {@code null} to unselect all
+     *         the tab to select, {@code null} to unselect all
      * @throws IllegalArgumentException
-     *             if {@code selectedTab} is not a child of this component
+     *         if {@code selectedTab} is not a child of this component or
+     *         template mapped using {@code @Id}
      */
     public void setSelectedTab(Tab selectedTab) {
         if (selectedTab == null) {
             setSelectedIndex(-1);
             return;
+        }
+
+        if (isTemplateMapped()) {
+            throw new IllegalArgumentException(
+                    "Can not select Tab when template mapped through '@Id'.");
         }
 
         int selectedIndex = indexOf(selectedTab);
@@ -332,11 +371,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * Sets the orientation of this tab sheet.
      *
      * @param orientation
-     *            the orientation
+     *         the orientation
      */
     public void setOrientation(Orientation orientation) {
-        getElement().setProperty("orientation",
-                orientation.name().toLowerCase());
+        getElement()
+                .setProperty("orientation", orientation.name().toLowerCase());
     }
 
     /**
@@ -354,10 +393,10 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * component. Negative values are not allowed.
      *
      * @param flexGrow
-     *            the proportion of the available space the enclosed tabs should
-     *            take up
+     *         the proportion of the available space the enclosed tabs should
+     *         take up
      * @throws IllegalArgumentException
-     *             if {@code flexGrow} is negative
+     *         if {@code flexGrow} is negative
      */
     public void setFlexGrowForEnclosedTabs(double flexGrow) {
         if (flexGrow < 0) {
