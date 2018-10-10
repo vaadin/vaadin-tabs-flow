@@ -33,12 +33,27 @@ public class TemplateTabs extends PolymerTemplate<TemplateModel> {
     @Id("tabs")
     private Tabs tabs;
 
+    private final Label message;
+
     public TemplateTabs() {
+        message = new Label();
+        message.setId("messsage-label");
+
         tabs.add(new Tab("ServerSide"));
         tabs.addSelectedChangeListener(selectedChangeEvent -> {
-            getElement().appendChild(
-                    new Label("Tab " + tabs.getSelectedIndex() + " selected")
-                            .getElement());
+            String messageText;
+            if (tabs.getSelectedTab() == null) {
+                messageText = String
+                        .format("Received selection for client-side tab with index '%s'",
+                                tabs.getSelectedIndex());
+            } else {
+                messageText = String
+                        .format("Received selection for server-side tab %s with index '%s'",
+                                tabs.getSelectedTab(), tabs.getSelectedIndex());
+            }
+            message.setText(messageText);
         });
+
+        getElement().appendChild(message.getElement());
     }
 }

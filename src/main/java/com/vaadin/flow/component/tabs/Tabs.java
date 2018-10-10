@@ -17,8 +17,10 @@
 package com.vaadin.flow.component.tabs;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -54,6 +56,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     private static final String SELECTED = "selected";
 
     private transient Tab selectedTab;
+    private String selectedId = null;
+    private AtomicInteger id = new AtomicInteger(0);
 
     /**
      * The valid orientations of {@link Tabs} instances.
@@ -68,8 +72,10 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      */
     public Tabs() {
         setSelectedIndex(-1);
-        getElement().addPropertyChangeListener(SELECTED,
-                event -> updateSelectedTab(event.isUserOriginated()));
+        if (!isTemplateMapped()) {
+            getElement().addPropertyChangeListener(SELECTED,
+                    event -> updateSelectedTab(event.isUserOriginated()));
+        }
     }
 
     /**
@@ -96,6 +102,14 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     @Override
     public void add(Component... components) {
+        if(isTemplateMapped()) {
+            Arrays.stream(components).forEach(component -> {
+                if (component instanceof Tab) {
+                    component.getElement().setProperty("id", id.incrementAndGet());
+                }
+            });
+        }
+
         boolean wasEmpty = getComponentCount() == 0;
         HasOrderedComponents.super.add(components);
         if (wasEmpty) {
@@ -194,12 +208,21 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
-        getElement().getNode().runWhenAttached(ui -> ui.beforeClientResponse(
-                this,
-                context -> ui.getPage().executeJavaScript(
-                        "$0.addEventListener('items-changed', "
-                                + "function(){ this.$server.updateSelectedTab(true); });",
-                        getElement())));
+        getElement().getNode().runWhenAttached(
+                ui -> ui.beforeClientResponse(this, context -> {
+                    ui.getPage().executeJavaScript(
+                            "$0.addEventListener('items-changed', "
+                                    + "function(){ this.$server.updateSelectedTab(true); });",
+                            getElement());
+                }));
+        if (isTemplateMapped()) {
+            getElement().getNode().runWhenAttached(
+                    ui -> ui.beforeClientResponse(this, context -> {
+                        getElement().executeJavaScript(
+                                "$0.addEventListener('selected-changed', "
+                                        + "function (event) { this.$server.setSelectedId(Polymer.dom($0).children[event.detail.value].getAttribute('id')); });");
+                    }));
+        }
     }
 
     /**
@@ -244,8 +267,16 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      */
     public Tab getSelectedTab() {
         int selectedIndex = getSelectedIndex();
-        if (selectedIndex < 0 || isTemplateMapped()) {
+        if (selectedIndex < 0) {
             return null;
+        }
+
+        // if template mapped match tab selection by tab id if possible.
+        if (isTemplateMapped()) {
+            return getChildren().filter(Tab.class::isInstance)
+                    .filter(tab -> tab.getElement().getProperty("id")
+                            .equals(selectedId)).map(Tab.class::cast)
+                    .findFirst().orElse(null);
         }
 
         Component selectedComponent = getComponentAt(selectedIndex);
@@ -254,6 +285,12 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
                     "Illegal component inside Tabs: " + selectedComponent);
         }
         return (Tab) selectedComponent;
+    }
+
+    @ClientCallable
+    private void setSelectedId(String id) {
+        selectedId = id;
+        updateSelectedTab(true);
     }
 
     /**
@@ -339,7 +376,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
         Tab currentlySelected = getSelectedTab();
 
-        if (Objects.equals(currentlySelected, selectedTab) && !isTemplateMapped()) {
+        if (Objects.equals(currentlySelected, selectedTab)
+                && currentlySelected != null) {
             return;
         }
 
