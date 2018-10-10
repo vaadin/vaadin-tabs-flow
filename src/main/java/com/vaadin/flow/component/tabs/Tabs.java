@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.AttachEvent;
@@ -54,10 +53,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         implements HasOrderedComponents<Tabs>, HasSize {
 
     private static final String SELECTED = "selected";
+    public static final String SEND_TAB_ID = "this.$server.setSelectedId(Polymer.dom($0).children[$0.selected].getAttribute('server-id'));";
 
     private transient Tab selectedTab;
     private String selectedId = null;
-    private AtomicInteger id = new AtomicInteger(0);
+    private int serverId = 0;
 
     /**
      * The valid orientations of {@link Tabs} instances.
@@ -78,9 +78,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         } else {
             getElement().executeJavaScript(
                     "$0.addEventListener('selected-changed', "
-                            + "function (event) { "
-                            + "this.$server.setSelectedId(Polymer.dom($0).children[event.detail.value].getAttribute('server-id')); "
-                            + "});");
+                            + "function (event) { " + SEND_TAB_ID + "});");
         }
     }
 
@@ -112,7 +110,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
             Arrays.stream(components).forEach(component -> {
                 if (component instanceof Tab) {
                     component.getElement().setAttribute("server-id",
-                            Integer.toString(id.incrementAndGet()));
+                            Integer.toString(serverId++));
                 }
             });
         }
@@ -232,7 +230,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         String serverCallFunction = "this.$server.updateSelectedTab(true);";
 
         if (isTemplateMapped()) {
-            serverCallFunction = "this.$server.setSelectedId(Polymer.dom($0).children[$0.selected].getAttribute('server-id'));";
+            serverCallFunction = SEND_TAB_ID;
 
             final String updateInitialSelection = String
                     .format("if($0.selected >= 0) { %s }", serverCallFunction);
@@ -243,7 +241,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
         final String addItemsChangedListener = String
                 .format("$0.addEventListener('items-changed',"
-                        + "function () { if($0.selected  >= 0) { %s }});", serverCallFunction);
+                                + "function () { if($0.selected  >= 0) { %s }});",
+                        serverCallFunction);
         getElement().getNode().runWhenAttached(
                 ui -> ui.beforeClientResponse(this, context -> getElement()
                         .executeJavaScript(addItemsChangedListener)));
