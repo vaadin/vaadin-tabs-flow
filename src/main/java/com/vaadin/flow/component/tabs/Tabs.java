@@ -55,6 +55,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     private transient Tab selectedTab;
 
+    private boolean autoSelect = true;
+
     /**
      * The valid orientations of {@link Tabs} instances.
      */
@@ -187,8 +189,33 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * An event to mark that the selected tab has changed.
      */
     public static class SelectedChangeEvent extends ComponentEvent<Tabs> {
+        private final Tab selectedTab;
+        private final Tab previousTab;
+        private final boolean initialSelection;
+
         public SelectedChangeEvent(Tabs source, boolean fromClient) {
+            this(source, null, fromClient);
+        }
+
+        public SelectedChangeEvent(Tabs source, Tab previousTab, boolean fromClient) {
             super(source, fromClient);
+            this.selectedTab = source.getSelectedTab();
+            this.initialSelection = source.isAutoSelect() &&
+                    previousTab == null &&
+                    !fromClient;
+            this.previousTab = previousTab;
+        }
+
+        public Tab getSelectedTab() {
+            return this.selectedTab;
+        }
+
+        public Tab getPreviousTab() {
+            return this.previousTab;
+        }
+
+        public boolean isInitialSelection() {
+            return this.initialSelection;
         }
     }
 
@@ -204,7 +231,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * Adds a listener for {@link SelectedChangeEvent}.
-     * 
+     *
      * @param listener
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
@@ -328,6 +355,17 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         getChildren().forEach(tab -> ((Tab) tab).setFlexGrow(flexGrow));
     }
 
+    public void setAutoSelect(boolean autoSelect) {
+        if (!autoSelect) {
+            setSelectedIndex(-1);
+        }
+        this.autoSelect = autoSelect;
+    }
+
+    public boolean isAutoSelect() {
+        return this.autoSelect;
+    }
+
     @ClientCallable
     private void updateSelectedTab(boolean changedFromClient) {
         if (getSelectedIndex() < -1) {
@@ -336,6 +374,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         }
 
         Tab currentlySelected = getSelectedTab();
+        Tab previousTab = selectedTab;
 
         if (Objects.equals(currentlySelected, selectedTab)) {
             return;
@@ -350,7 +389,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
                 selectedTab.setSelected(true);
             }
 
-            fireEvent(new SelectedChangeEvent(this, changedFromClient));
+            fireEvent(new SelectedChangeEvent(this, previousTab, changedFromClient));
         } else {
             updateEnabled(currentlySelected);
             setSelectedTab(selectedTab);

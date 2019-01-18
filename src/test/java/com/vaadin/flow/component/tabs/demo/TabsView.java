@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
@@ -57,6 +58,7 @@ public class TabsView extends DemoView {
         createTabsWithPages();
         createTabsWithCustomContent();
         createTebsWithThemeVariants();
+        createTabsAutoSelectFalse();
     }
 
     private void createTebsWithThemeVariants() {
@@ -68,7 +70,7 @@ public class TabsView extends DemoView {
         Tabs tabs = new Tabs(tab1, tab2, tab3);
         tabs.addThemeVariants(TabsVariant.LUMO_SMALL);
         // end-source-example
-        
+
         addVariantsDemo(() -> {
             return tabs;
         }, GeneratedVaadinTabs::addThemeVariants,
@@ -247,5 +249,30 @@ public class TabsView extends DemoView {
 
         tabs.setId("tabs-with-custom-content");
         addCard("Tabs with custom content", tabs);
+    }
+
+    private void createTabsAutoSelectFalse() {
+        // begin-source-example
+        // source-example-heading: Tabs auto select false
+        Tab tab1 = new Tab("Tab one");
+        Tab tab2 = new Tab("Tab two");
+        Tab tab3 = new Tab("Tab three");
+        Tabs tabs = new Tabs(tab1, tab2, tab3);
+        tabs.setAutoSelect(false);
+
+        Text newText = new Text("");
+        Text oldText = new Text("");
+        tabs.addSelectedChangeListener(event -> {
+            newText.setText("Current tab : " + event.getSelectedTab().getLabel());
+
+            if (event.getPreviousTab() != null) {
+                oldText.setText(
+                        "Previous tab : " + event.getPreviousTab().getLabel());
+            }
+        });
+        // end-source-example
+
+        tabs.setId("tabs-auto-select-false");
+        addCard("Tabs auto select false", tabs, newText, oldText);
     }
 }

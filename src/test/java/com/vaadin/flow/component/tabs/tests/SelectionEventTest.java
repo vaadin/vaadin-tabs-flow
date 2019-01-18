@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.component.tabs.tests;
 
+import com.vaadin.flow.component.Text;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -263,6 +264,39 @@ public class SelectionEventTest {
         Assert.assertEquals(
                 "Selection was not changed, no event should've been fired", 1,
                 eventCount);
+    }
+
+    @Test
+    public void tabsAutoSelectFalse_eventFired() {
+        tabs.setAutoSelect(false);
+        Assert.assertEquals(
+                "Selection event should have been fired when remove selected tab",
+                eventCount, 1);
+    }
+
+    @Test
+    public void tabsAutoSelectFalse_previousAndCurrentTab() {
+        Text currentLabel = new Text("");
+        Text previousLabel = new Text("");
+        tabs.setAutoSelect(false);
+        tabs.addSelectedChangeListener(e -> {
+            currentLabel.setText(
+                    e.getSelectedTab() != null ? e.getSelectedTab().getLabel(): "");
+            previousLabel.setText(
+                    e.getPreviousTab() != null ? e.getPreviousTab().getLabel(): "");
+        });
+
+        tabs.setSelectedTab(tab1);
+        Assert.assertEquals("Current tab should be tab 1",
+                currentLabel.getText(), tab1.getLabel());
+        Assert.assertEquals("Previous tab should be empty",
+                previousLabel.getText(), "");
+
+        tabs.setSelectedTab(tab2);
+        Assert.assertEquals("Current tab should be tab 2",
+                currentLabel.getText(), tab2.getLabel());
+        Assert.assertEquals("Previous tab should be tab 1",
+                previousLabel.getText(), tab1.getLabel());
     }
 
 }
