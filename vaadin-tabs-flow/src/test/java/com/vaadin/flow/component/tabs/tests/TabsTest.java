@@ -154,4 +154,14 @@ public class TabsTest {
         Assert.assertFalse(tab1.isSelected());
         Assert.assertTrue(tab2.isSelected());
     }
+
+    @Test
+    public void tabsWithoutAutomaticSelection() {
+        Tab tab1 = new Tab("Tab one");
+        Tab tab2 = new Tab("Tab two");
+        Tabs tabs = new Tabs(false, tab1, tab2);
+
+        Assert.assertNull(tabs.getSelectedTab());
+        Assert.assertEquals(tabs.getSelectedIndex(), -1);
+    }
 }
