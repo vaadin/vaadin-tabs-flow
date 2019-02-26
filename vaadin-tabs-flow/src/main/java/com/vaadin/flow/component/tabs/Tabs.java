@@ -128,13 +128,17 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * <p>
      * Removing components before the selected tab will decrease the
      * {@link #getSelectedIndex() selected index} to avoid changing the selected
-     * tab. Removing the selected tab will select the next available tab.
+     * tab. Removing the selected tab will select the next available tab if autoselect is true,
+     * otherwise no tab will be selected.
      */
     @Override
     public void remove(Component... components) {
         int lowerIndices = (int) Stream.of(components).map(this::indexOf)
                 .filter(index -> index >= 0 && index < getSelectedIndex())
                 .count();
+
+        boolean isSelectedTab = Stream.of(components)
+                .anyMatch(component -> component.equals(getSelectedTab()));
 
         HasOrderedComponents.super.remove(components);
 
@@ -146,7 +150,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
             newSelectedIndex = getComponentCount() - 1;
         }
 
-        if (getComponentCount() == 0 || !isAutoselect()) {
+        if (getComponentCount() == 0 || (isSelectedTab && !isAutoselect())) {
             newSelectedIndex = -1;
         }
 

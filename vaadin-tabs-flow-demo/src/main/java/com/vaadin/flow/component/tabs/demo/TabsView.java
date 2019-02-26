@@ -257,9 +257,7 @@ public class TabsView extends DemoView {
         Tab tab1 = new Tab("Tab one");
         Tab tab2 = new Tab("Tab two");
         Tab tab3 = new Tab("Tab three");
-        Tabs tabs = new Tabs();
-        tabs.setAutoselect(false);
-        tabs.add(tab1, tab2, tab3);
+        Tabs tabs = new Tabs(false, tab1, tab2, tab3);
 
         Text newText = new Text("");
         Text oldText = new Text("");
