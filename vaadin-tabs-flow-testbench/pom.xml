@@ -9,7 +9,7 @@
         <version>1.4-SNAPSHOT</version>
     </parent>
 
-    <artifactId>vaadin-tabs-flow-testbench</artifactId>
+    <artifactId>vaadin-tabs-testbench</artifactId>
     <packaging>jar</packaging>
     <name>Vaadin Tabs Flow Testbench</name>
 
