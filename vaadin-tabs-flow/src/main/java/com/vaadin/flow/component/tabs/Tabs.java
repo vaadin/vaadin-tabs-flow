@@ -29,7 +29,6 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.Synchronize;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -88,8 +87,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     }
 
     /**
-     * Constructs a new object enclosing the given autoselect option and tabs, with
-     * {@link Orientation#HORIZONTAL HORIZONTAL} orientation.
+     * Constructs a new object enclosing the given autoselect option and tabs,
+     * with {@link Orientation#HORIZONTAL HORIZONTAL} orientation.
      *
      * @param autoselect
      *            {@code true} to autoselect tab, {@code false} to not
@@ -132,8 +131,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * <p>
      * Removing components before the selected tab will decrease the
      * {@link #getSelectedIndex() selected index} to avoid changing the selected
-     * tab. Removing the selected tab will select the next available tab if autoselect is true,
-     * otherwise no tab will be selected.
+     * tab. Removing the selected tab will select the next available tab if
+     * autoselect is true, otherwise no tab will be selected.
      */
     @Override
     public void remove(Component... components) {
@@ -191,7 +190,9 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     public void addComponentAtIndex(int index, Component component) {
         HasOrderedComponents.super.addComponentAtIndex(index, component);
 
-        if (index <= getSelectedIndex()) {
+        if (autoselect && getChildren().count() == 1) {
+            setSelectedIndex(0);
+        } else if (index <= getSelectedIndex()) {
             // Prevents changing the selected tab
             setSelectedIndex(getSelectedIndex() + 1);
         }
@@ -222,10 +223,12 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
          * @param source
          *            The tabs that fired the event.
          * @param fromClient
-         *            <code>true</code> for client-side events, <code>false</code>
-         *            otherwise.
+         *            <code>true</code> for client-side events,
+         *            <code>false</code> otherwise.
          *
-         * @deprecated use {@link #SelectedChangeEvent(Tabs source, Tab previousTab, boolean fromClient)} instead.
+         * @deprecated use
+         *             {@link #SelectedChangeEvent(Tabs source, Tab previousTab, boolean fromClient)}
+         *             instead.
          */
         @Deprecated
         public SelectedChangeEvent(Tabs source, boolean fromClient) {
@@ -240,21 +243,21 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
          * @param previousTab
          *            The previous selected tab.
          * @param fromClient
-         *            <code>true</code> for client-side events, <code>false</code>
-         *            otherwise.
+         *            <code>true</code> for client-side events,
+         *            <code>false</code> otherwise.
          */
-        public SelectedChangeEvent(Tabs source, Tab previousTab, boolean fromClient) {
+        public SelectedChangeEvent(Tabs source, Tab previousTab,
+                boolean fromClient) {
             super(source, fromClient);
             this.selectedTab = source.getSelectedTab();
-            this.initialSelection = source.isAutoselect() &&
-                    previousTab == null &&
-                    !fromClient;
+            this.initialSelection = source.isAutoselect() && previousTab == null
+                    && !fromClient;
             this.previousTab = previousTab;
         }
 
         /**
-         * Get selected tab for this event.
-         * Can be {@code null} when autoselect is set to false.
+         * Get selected tab for this event. Can be {@code null} when autoselect
+         * is set to false.
          *
          * @return the selected tab for this event
          */
@@ -263,8 +266,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
         }
 
         /**
-         * Get previous selected tab for this event.
-         * Can be {@code null} when autoselect is set to false.
+         * Get previous selected tab for this event. Can be {@code null} when
+         * autoselect is set to false.
          *
          * @return the selected tab for this event
          */
@@ -420,10 +423,10 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     }
 
     /**
-     * Specify that the tabs should be automatically selected.
-     * When autoselect is false, no tab will be selected when the component load
-     * and it will not select any others tab when removing currently selected tab.
-     * The default value is true.
+     * Specify that the tabs should be automatically selected. When autoselect
+     * is false, no tab will be selected when the component load and it will not
+     * select any others tab when removing currently selected tab. The default
+     * value is true.
      *
      * @param autoselect
      *            {@code true} to autoselect tab, {@code false} to not.
@@ -433,8 +436,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     }
 
     /**
-     * Gets whether the tabs should be automatically selected.
-     * The default value is true.
+     * Gets whether the tabs should be automatically selected. The default value
+     * is true.
      *
      * @return <code>true</code> if autoselect is active, <code>false</code>
      *         otherwise
@@ -467,7 +470,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
                 selectedTab.setSelected(true);
             }
 
-            fireEvent(new SelectedChangeEvent(this, previousTab, changedFromClient));
+            fireEvent(new SelectedChangeEvent(this, previousTab,
+                    changedFromClient));
         } else {
             updateEnabled(currentlySelected);
             setSelectedTab(selectedTab);
