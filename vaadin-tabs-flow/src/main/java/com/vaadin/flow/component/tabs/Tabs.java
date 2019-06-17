@@ -37,9 +37,12 @@ import com.vaadin.flow.shared.Registration;
  * {@link Tab} components can be added to this component with the
  * {@link #add(Tab...)} method or the {@link #Tabs(Tab...)} constructor. The Tab
  * components added to it can be selected with the
- * {@link #setSelectedIndex(int)} or {@link #setSelectedTab(Tab)} methods.
- * Removing the selected tab from the component changes the selection to the
- * next available tab.
+ * {@link #setSelectedIndex(int)} or {@link #setSelectedTab(Tab)} methods. The
+ * first added {@link Tab} component will be automatically selected, firing a
+ * {@link SelectedChangeEvent}, unless autoselection is explicitly disabled with
+ * {@link #Tabs(boolean, Tab...)}, or {@link #setAutoselect(boolean)}. Removing
+ * the selected tab from the component changes the selection to the next
+ * available tab.
  * <p>
  * <strong>Note:</strong> Adding or removing Tab components via the Element API,
  * eg. {@code tabs.getElement().insertChild(0, tab.getElement()); }, doesn't
@@ -77,6 +80,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
     /**
      * Constructs a new object enclosing the given tabs, with
      * {@link Orientation#HORIZONTAL HORIZONTAL} orientation.
+     * <p>
+     * The first added {@link Tab} component will be automatically selected,
+     * firing a {@link SelectedChangeEvent}, unless autoselection is explicitly
+     * disabled with {@link #Tabs(boolean, Tab...)}, or
+     * {@link #setAutoselect(boolean)}.
      *
      * @param tabs
      *            the tabs to enclose
@@ -91,7 +99,8 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      * with {@link Orientation#HORIZONTAL HORIZONTAL} orientation.
      *
      * @param autoselect
-     *            {@code true} to autoselect tab, {@code false} to not
+     *            {@code true} to automatically select the first added tab,
+     *            {@code false} to not
      * @param tabs
      *            the tabs to enclose
      */
@@ -103,6 +112,11 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
 
     /**
      * Adds the given tabs to the component.
+     * <p>
+     * The first added {@link Tab} component will be automatically selected,
+     * firing a {@link SelectedChangeEvent}, unless autoselection is explicitly
+     * disabled with {@link #Tabs(boolean, Tab...)}, or
+     * {@link #setAutoselect(boolean)}.
      *
      * @param tabs
      *            the tabs to enclose
