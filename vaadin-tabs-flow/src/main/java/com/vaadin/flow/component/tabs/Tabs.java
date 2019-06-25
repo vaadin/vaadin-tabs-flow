@@ -100,7 +100,7 @@ public class Tabs extends GeneratedVaadinTabs<Tabs>
      *
      * @param autoselect
      *            {@code true} to automatically select the first added tab,
-     *            {@code false} to not
+     *            {@code false} to leave tabs unselected
      * @param tabs
      *            the tabs to enclose
      */
