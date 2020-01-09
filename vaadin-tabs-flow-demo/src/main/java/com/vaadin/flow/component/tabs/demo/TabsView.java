@@ -213,7 +213,6 @@ public class TabsView extends DemoView {
             Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
             selectedPage.setVisible(true);
         });
-
         // end-source-example
 
         tabs.setId("tabs-with-pages");
