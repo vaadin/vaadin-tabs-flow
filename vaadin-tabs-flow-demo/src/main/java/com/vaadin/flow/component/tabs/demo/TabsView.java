@@ -69,8 +69,9 @@ public class TabsView extends DemoView {
         Tab tab3 = new Tab("Tab three");
         Tabs tabs = new Tabs(tab1, tab2, tab3);
         tabs.addThemeVariants(TabsVariant.LUMO_SMALL);
+        add(tabs);
         // end-source-example
-
+        remove(tabs);
         addVariantsDemo(() -> {
             return tabs;
         }, GeneratedVaadinTabs::addThemeVariants,
@@ -85,8 +86,9 @@ public class TabsView extends DemoView {
         Tab tab2 = new Tab("Tab two");
         Tab tab3 = new Tab("Tab three");
         Tabs tabs = new Tabs(tab1, tab2, tab3);
+        add(tabs);
         // end-source-example
-
+        remove(tabs);
         tabs.setId("horizontal-tabs");
         addCard("Horizontal tabs", tabs);
     }
@@ -100,7 +102,9 @@ public class TabsView extends DemoView {
         Tab tab3 = new Tab("Tab three");
         tabs.add(tab1, tab2, tab3);
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
+        add(tabs);
         // end-source-example
+        remove(tabs);
 
         tabs.setId("vertical-tabs");
         addCard("Vertical tabs", tabs);
@@ -115,7 +119,9 @@ public class TabsView extends DemoView {
                 new Tab("Tab nine"), new Tab("Tab ten"), new Tab("Tab eleven"),
                 new Tab("Tab twelve"), new Tab("Tab thirteen"),
                 new Tab("Tab fourteen"), new Tab("Tab fifteen"));
+        add(tabs);
         // end-source-example
+        remove(tabs);
 
         tabs.setId("scrollable-horizontal-tabs");
         addCard("Scrollable horizontal tabs", tabs);
@@ -132,7 +138,9 @@ public class TabsView extends DemoView {
                 new Tab("Tab fourteen"), new Tab("Tab fifteen"));
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         tabs.setHeight("130px");
+        add(tabs);
         // end-source-example
+        remove(tabs);
 
         tabs.setId("scrollable-vertical-tabs");
         addCard("Scrollable vertical tabs", tabs);
@@ -149,7 +157,9 @@ public class TabsView extends DemoView {
         Tab tab4 = new Tab("Tab four");
         Tab tab5 = new Tab("Tab five");
         tabs.add(tab1, tab2, tab3, tab4, tab5);
+        add(tabs);
         // end-source-example
+        remove(tabs);
 
         tabs.setId("disabled-tabs");
         addCard("Disabled tabs", tabs);
@@ -163,7 +173,9 @@ public class TabsView extends DemoView {
         Tab tab3 = new Tab("Tab three");
         Tabs tabs = new Tabs(tab1, tab2, tab3);
         tabs.setFlexGrowForEnclosedTabs(1);
+        add(tabs);
         // end-source-example
+        remove(tabs);
 
         tabs.setId("full-width-tabs");
         addCard("Tabs covering the full width of the tab bar", tabs);
@@ -178,7 +190,9 @@ public class TabsView extends DemoView {
         Tab tab3 = new Tab("Tab three");
         tabs.add(tab1, tab2, tab3);
         tabs.setSelectedTab(tab2);
+        add(tabs);
         // end-source-example
+        remove(tabs);
 
         tabs.setId("preselected-tabs");
         addCard("Pre-selected tabs", tabs);
@@ -213,7 +227,9 @@ public class TabsView extends DemoView {
             Component selectedPage = tabsToPages.get(tabs.getSelectedTab());
             selectedPage.setVisible(true);
         });
+        add(tabs,pages);
         // end-source-example
+        remove(tabs,pages);
 
         tabs.setId("tabs-with-pages");
         tab1.setId("tab1");
@@ -241,8 +257,9 @@ public class TabsView extends DemoView {
         Tab tab2 = new Tab(new Checkbox("What?"));
         Tab tab3 = new Tab(new Icon(VaadinIcon.COG));
         Tabs tabs = new Tabs(tab1, tab2, tab3);
+        add(tabs);
         // end-source-example
-
+        remove(tabs);
         tabs.setId("tabs-with-custom-content");
         addCard("Tabs with custom content", tabs);
     }
@@ -265,8 +282,9 @@ public class TabsView extends DemoView {
                         "Previous tab : " + event.getPreviousTab().getLabel());
             }
         });
+        add(tabs,newText,oldText);
         // end-source-example
-
+        remove(tabs,newText,oldText);
         tabs.setId("tabs-auto-select-false");
         addCard("Tabs with automatic select set to false", tabs, newText, oldText);
     }
