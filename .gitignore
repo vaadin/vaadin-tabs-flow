@@ -13,5 +13,7 @@ error-screenshots/
 
 # The following files are generated/updated by flow-maven-plugin
 package*.json
-webpack*.js
+webpack.*.js
+tsconfig.json
+types.d.ts
 node_modules/
